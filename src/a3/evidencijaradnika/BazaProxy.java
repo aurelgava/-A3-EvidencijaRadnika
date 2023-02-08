@@ -6,9 +6,11 @@
 package a3.evidencijaradnika;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+
 
 /**
  *
@@ -17,7 +19,7 @@ import javax.swing.JOptionPane;
 public class BazaProxy {
 
     public static Connection c;
-
+    public static ArrayList<PodaciDO> podaciZaGrafik;
     public static void PoveziSe() {
         if (c == null) {
             try {
@@ -52,16 +54,28 @@ public class BazaProxy {
 
     }
 
-    static void getProjectsByYear() {
+    static ArrayList<PodaciDO> getProjectsByYear() {
         try {
-            PreparedStatement ps = c.prepareStatement("SELECT Godina, COUNT(BrojProjekata), SUM(BrojRadnika) FROM\n"
+            PreparedStatement ps = c.prepareStatement("SELECT Godina, COUNT(BrojProjekata) AS BrojProjekata, SUM(BrojRadnika) AS BrojRadnika FROM\n"
                     + "(SELECT YEAR(Projekat.DatumPocetka) AS Godina, Projekat.ProjekatID AS BrojProjekata, COUNT(Ucesce.RadnikID) AS BrojRadnika\n"
                     + "FROM\n"
                     + "Projekat INNER JOIN Ucesce ON Projekat.ProjekatID=Ucesce.ProjekatID\n"
                     + "GROUP BY YEAR(Projekat.DatumPocetka), Projekat.ProjekatID)\n"
                     + "GROUP BY Godina ");
+            ResultSet rs = ps.executeQuery();
+            podaciZaGrafik = new ArrayList<>();
+            while(rs.next()){
+                //System.out.println(rs.getInt("Godina")+" "+ rs.getInt("BrojProjekata")+" "+rs.getInt("BrojRadnika"));
+                PodaciDO podatak = new PodaciDO();
+                podatak.godina = rs.getInt("Godina");
+                podatak.brojProjekata = rs.getInt("BrojProjekata");
+                podatak.brojRadnika = rs.getInt("BrojRadnika");
+                podaciZaGrafik.add(podatak);
+            }
+            return podaciZaGrafik;
         } catch (SQLException ex) {
             Logger.getLogger(BazaProxy.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return null;
     }
 }

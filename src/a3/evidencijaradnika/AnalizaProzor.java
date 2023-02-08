@@ -5,6 +5,8 @@
  */
 package a3.evidencijaradnika;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author Korisnik
@@ -103,6 +105,7 @@ public class AnalizaProzor extends javax.swing.JFrame {
 
     private void jSpinner1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner1StateChanged
         System.out.println(jSpinner1.getValue());
+        ArrayList<PodaciDO> podaci = BazaProxy.getProjectsByYear();
     }//GEN-LAST:event_jSpinner1StateChanged
 
     /**
