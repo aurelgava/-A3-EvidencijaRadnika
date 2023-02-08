@@ -5,8 +5,18 @@
  */
 package a3.evidencijaradnika;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import javax.swing.table.DefaultTableModel;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartFrame;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.DefaultKeyedValuesDataset;
+import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.general.PieDataset;
 
 /**
  *
@@ -106,19 +116,32 @@ public class AnalizaProzor extends javax.swing.JFrame {
 
     private void jSpinner1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner1StateChanged
         //System.out.println(jSpinner1.getValue());
-        ArrayList<PodaciDO> podaci = BazaProxy.getProjectsByYear((int)jSpinner1.getValue());
+        ArrayList<PodaciDO> podaci = BazaProxy.getProjectsByYear((int) jSpinner1.getValue());
         DefaultTableModel dtm = new DefaultTableModel();
+        //DefaultKeyedValuesDataset dataset = new DefaultKeyedValuesDataset();
+        DefaultPieDataset dps = new DefaultPieDataset();
         dtm.addColumn("Godina");
         dtm.addColumn("Broj projekata");
         dtm.addColumn("Broj radnika");
-        for(PodaciDO p: podaci){
+        for (PodaciDO p : podaci) {
             Object[] red = new Object[3];
-            red[0]=p.godina;
-            red[1]=p.brojProjekata;
-            red[2]=p.brojRadnika;
+            red[0] = p.godina;
+            red[1] = p.brojProjekata;
+            red[2] = p.brojRadnika;
             dtm.addRow(red);
+            dps.setValue(Integer.toString(p.godina), p.brojRadnika);
+            //dpd.addValue(p.brojRadnika, "", Integer.toString(p.godina));
         }
+        
         jTable1.setModel(dtm);
+        JFreeChart chart = ChartFactory.createPieChart("Pie Chart Example", dps, true, true, false);
+        ChartPanel frame = new ChartPanel(chart);
+        
+        frame.setVisible(true);
+        frame.setPreferredSize(new Dimension(500, 270));
+        jPanel1.setLayout(new java.awt.BorderLayout());
+        jPanel1.add(frame, BorderLayout.CENTER);
+        jPanel1.validate();
     }//GEN-LAST:event_jSpinner1StateChanged
 
     /**
