@@ -54,14 +54,16 @@ public class BazaProxy {
 
     }
 
-    static ArrayList<PodaciDO> getProjectsByYear() {
+    static ArrayList<PodaciDO> getProjectsByYear(int starost) {
         try {
             PreparedStatement ps = c.prepareStatement("SELECT Godina, COUNT(BrojProjekata) AS BrojProjekata, SUM(BrojRadnika) AS BrojRadnika FROM\n"
                     + "(SELECT YEAR(Projekat.DatumPocetka) AS Godina, Projekat.ProjekatID AS BrojProjekata, COUNT(Ucesce.RadnikID) AS BrojRadnika\n"
                     + "FROM\n"
                     + "Projekat INNER JOIN Ucesce ON Projekat.ProjekatID=Ucesce.ProjekatID\n"
+                    + "WHERE YEAR(Projekat.DatumPocetka)>=YEAR(Date())-?"
                     + "GROUP BY YEAR(Projekat.DatumPocetka), Projekat.ProjekatID)\n"
                     + "GROUP BY Godina ");
+            ps.setInt(1, starost);
             ResultSet rs = ps.executeQuery();
             podaciZaGrafik = new ArrayList<>();
             while(rs.next()){

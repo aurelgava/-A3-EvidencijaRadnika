@@ -6,6 +6,7 @@
 package a3.evidencijaradnika;
 
 import java.util.ArrayList;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -104,8 +105,20 @@ public class AnalizaProzor extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jSpinner1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner1StateChanged
-        System.out.println(jSpinner1.getValue());
-        ArrayList<PodaciDO> podaci = BazaProxy.getProjectsByYear();
+        //System.out.println(jSpinner1.getValue());
+        ArrayList<PodaciDO> podaci = BazaProxy.getProjectsByYear((int)jSpinner1.getValue());
+        DefaultTableModel dtm = new DefaultTableModel();
+        dtm.addColumn("Godina");
+        dtm.addColumn("Broj projekata");
+        dtm.addColumn("Broj radnika");
+        for(PodaciDO p: podaci){
+            Object[] red = new Object[3];
+            red[0]=p.godina;
+            red[1]=p.brojProjekata;
+            red[2]=p.brojRadnika;
+            dtm.addRow(red);
+        }
+        jTable1.setModel(dtm);
     }//GEN-LAST:event_jSpinner1StateChanged
 
     /**
