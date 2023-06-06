@@ -10,13 +10,9 @@ import java.awt.Dimension;
 import java.util.ArrayList;
 import javax.swing.table.DefaultTableModel;
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartFrame;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.general.DefaultKeyedValuesDataset;
 import org.jfree.data.general.DefaultPieDataset;
-import org.jfree.data.general.PieDataset;
 
 /**
  *
@@ -46,7 +42,7 @@ public class AnalizaProzor extends javax.swing.JFrame {
         jTable1 = new javax.swing.JTable();
         jPanel1 = new javax.swing.JPanel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jLabel1.setText("Starost");
 
@@ -134,7 +130,7 @@ public class AnalizaProzor extends javax.swing.JFrame {
         }
         
         jTable1.setModel(dtm);
-        JFreeChart chart = ChartFactory.createPieChart("Pie Chart Example", dps, true, true, false);
+        JFreeChart chart = ChartFactory.createPieChart("", dps, true, true, false);
         ChartPanel frame = new ChartPanel(chart);
         
         frame.setVisible(true);
