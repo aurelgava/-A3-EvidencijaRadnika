@@ -19,7 +19,6 @@ final public class A3EvidencijaRadnika {
      * @param args the command line arguments
      */
     public static void main(String[] args) {        
-        BazaProxy.PoveziSe();
         GlavniProzor gp = new GlavniProzor();
         gp.setExtendedState(JFrame.MAXIMIZED_BOTH);
         gp.setVisible(true);

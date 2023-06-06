@@ -5,9 +5,14 @@
  */
 package a3.evidencijaradnika;
 
+import java.sql.*;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.util.ArrayList;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.DefaultTableModel;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -19,12 +24,18 @@ import org.jfree.data.general.DefaultPieDataset;
  * @author Korisnik
  */
 public class AnalizaProzor extends javax.swing.JFrame {
-
+    Connection c;
     /**
      * Creates new form AnalizaProzor
      */
-    public AnalizaProzor() {
+    public AnalizaProzor() {        
         initComponents();
+        try {
+            c = DriverManager.getConnection("jdbc:ucanaccess://src\\resursi\\Evidencija_Radnik_Projekat.accdb");
+        } catch (SQLException ex) {
+            Logger.getLogger(AnalizaProzor.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 
     /**
@@ -111,33 +122,46 @@ public class AnalizaProzor extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jSpinner1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSpinner1StateChanged
-        //System.out.println(jSpinner1.getValue());
-        ArrayList<PodaciDO> podaci = BazaProxy.getProjectsByYear((int) jSpinner1.getValue());
-        DefaultTableModel dtm = new DefaultTableModel();
-        //DefaultKeyedValuesDataset dataset = new DefaultKeyedValuesDataset();
-        DefaultPieDataset dps = new DefaultPieDataset();
-        dtm.addColumn("Godina");
-        dtm.addColumn("Broj projekata");
-        dtm.addColumn("Broj radnika");
-        for (PodaciDO p : podaci) {
-            Object[] red = new Object[3];
-            red[0] = p.godina;
-            red[1] = p.brojProjekata;
-            red[2] = p.brojRadnika;
-            dtm.addRow(red);
-            dps.setValue(Integer.toString(p.godina), p.brojRadnika);
-            //dpd.addValue(p.brojRadnika, "", Integer.toString(p.godina));
+        try {
+            //System.out.println(jSpinner1.getValue());
+            //ArrayList<PodaciDO> podaci = BazaProxy.getProjectsByYear((int) jSpinner1.getValue());
+            PreparedStatement ps = c.prepareStatement("SELECT Godina, COUNT(BrojProjekata) AS BrojProjekata, SUM(BrojRadnika) AS BrojRadnika FROM\n"
+                    + "(SELECT YEAR(Projekat.DatumPocetka) AS Godina, Projekat.ProjekatID AS BrojProjekata, COUNT(Ucesce.RadnikID) AS BrojRadnika\n"
+                    + "FROM\n"
+                    + "Projekat INNER JOIN Ucesce ON Projekat.ProjekatID=Ucesce.ProjekatID\n"
+                    + "WHERE YEAR(Projekat.DatumPocetka)>=YEAR(Date())-?"
+                    + "GROUP BY YEAR(Projekat.DatumPocetka), Projekat.ProjekatID)\n"
+                    + "GROUP BY Godina ");
+            ps.setInt(1, (int) jSpinner1.getValue());
+            ResultSet rs = ps.executeQuery();
+            DefaultTableModel dtm = new DefaultTableModel();
+            //DefaultKeyedValuesDataset dataset = new DefaultKeyedValuesDataset();
+            DefaultPieDataset dps = new DefaultPieDataset();
+            dtm.addColumn("Godina");
+            dtm.addColumn("Broj projekata");
+            dtm.addColumn("Broj radnika");
+            while (rs.next()) {
+                Object[] red = new Object[3];
+                red[0] = rs.getInt("Godina");
+                red[1] = rs.getInt("BrojProjekata");
+                red[2] = rs.getInt("BrojRadnika");
+                dtm.addRow(red);
+                dps.setValue(Integer.toString(rs.getInt("Godina")), rs.getInt("BrojRadnika"));
+                //dpd.addValue(p.brojRadnika, "", Integer.toString(p.godina));
+            }
+            
+            jTable1.setModel(dtm);
+            JFreeChart chart = ChartFactory.createPieChart("", dps, true, true, false);
+            ChartPanel frame = new ChartPanel(chart);
+            
+            frame.setVisible(true);
+            frame.setPreferredSize(new Dimension(500, 270));
+            jPanel1.setLayout(new java.awt.BorderLayout());
+            jPanel1.add(frame, BorderLayout.CENTER);
+            jPanel1.validate();
+        } catch (SQLException ex) {
+            Logger.getLogger(AnalizaProzor.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        jTable1.setModel(dtm);
-        JFreeChart chart = ChartFactory.createPieChart("", dps, true, true, false);
-        ChartPanel frame = new ChartPanel(chart);
-        
-        frame.setVisible(true);
-        frame.setPreferredSize(new Dimension(500, 270));
-        jPanel1.setLayout(new java.awt.BorderLayout());
-        jPanel1.add(frame, BorderLayout.CENTER);
-        jPanel1.validate();
     }//GEN-LAST:event_jSpinner1StateChanged
 
     /**

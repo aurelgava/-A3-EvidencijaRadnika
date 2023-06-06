@@ -5,18 +5,19 @@
  */
 package a3.evidencijaradnika;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.sql.*;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -24,12 +25,18 @@ import javax.swing.table.DefaultTableModel;
  * @author Korisnik
  */
 public class GlavniProzor extends javax.swing.JFrame {
-
+    Connection c;
     /**
      * Creates new form GlavniProzor
      */
     public GlavniProzor() {
         initComponents();
+        try {
+            c = DriverManager.getConnection("jdbc:ucanaccess://src\\resursi\\Evidencija_Radnik_Projekat.accdb");
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Greska prilikom pvezivanja s bazom", "Greska", JOptionPane.ERROR_MESSAGE);
+            Logger.getLogger(GlavniProzor.class.getName()).log(Level.SEVERE, null, ex);
+        }
         populate();
     }
 
@@ -62,6 +69,7 @@ public class GlavniProzor extends javax.swing.JFrame {
         jButton3 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Projekti");
 
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resursi/bar-chart.png"))); // NOI18N
         jButton1.setText("Pregled projekata");
@@ -230,30 +238,37 @@ public class GlavniProzor extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        File f = new File("log_" + LocalDate.now().toString() + ".txt");
         try {
-            FileWriter fw = new FileWriter(f, true);
-            fw.write(jTextField1.getText() + " " + jTextField2.getText()+"\n");
-            fw.close();
-        } catch (IOException ex) {
+            PreparedStatement ps = c.prepareStatement("DELETE FROM Projekat WHERE ProjekatID = ?");
+            int id = Integer.parseInt(jTextField1.getText());
+            ps.setInt(1, id);
+            ps.execute();
+            JOptionPane.showMessageDialog(this, "Uspesno obrisano", "Uspeh!", JOptionPane.INFORMATION_MESSAGE);
+            File f = new File("log_" + LocalDate.now().toString() + ".txt");
+            try {
+                FileWriter fw = new FileWriter(f, true);
+                fw.write(jTextField1.getText() + " " + jTextField2.getText() + "\n");
+                fw.close();
+            } catch (IOException ex) {
+                Logger.getLogger(GlavniProzor.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            //BazaProxy.brisiProjekat(id);
+            jTextField1.setText("");
+            jTextField2.setText("");
+            jTextField3.setText("");
+            jTextField4.setText("");
+            jCheckBox1.setSelected(false);
+            jTextArea1.setText("");
+            populate();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Nespesno obrisano", "Greska!", JOptionPane.WARNING_MESSAGE);
             Logger.getLogger(GlavniProzor.class.getName()).log(Level.SEVERE, null, ex);
         }
-        int id = Integer.parseInt(jTextField1.getText());
-        //BazaProxy.brisiProjekat(id);
-        jTextField1.setText("");
-        jTextField2.setText("");
-        jTextField3.setText("");
-        jTextField4.setText("");
-        jCheckBox1.setSelected(false);
-        jTextArea1.setText("");
-        populate();
-
-
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         new AnalizaProzor().setVisible(true);
-         
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
@@ -313,8 +328,9 @@ public class GlavniProzor extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private void populate() {
-        ResultSet rs = BazaProxy.getProjects();
         try {
+            Statement s = c.createStatement();
+            ResultSet rs = s.executeQuery("SELECT * FROM Projekat");
             DefaultTableModel dtm = new DefaultTableModel();
             dtm.addColumn("Шифра");
             dtm.addColumn("Назив");
