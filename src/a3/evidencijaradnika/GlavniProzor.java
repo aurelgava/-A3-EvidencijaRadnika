@@ -25,7 +25,9 @@ import javax.swing.table.DefaultTableModel;
  * @author Korisnik
  */
 public class GlavniProzor extends javax.swing.JFrame {
+
     Connection c;
+
     /**
      * Creates new form GlavniProzor
      */
@@ -238,7 +240,8 @@ public class GlavniProzor extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        try {
+        /*try {
+           
             PreparedStatement ps = c.prepareStatement("DELETE FROM Projekat WHERE ProjekatID = ?");
             int id = Integer.parseInt(jTextField1.getText());
             ps.setInt(1, id);
@@ -263,6 +266,61 @@ public class GlavniProzor extends javax.swing.JFrame {
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "Nespesno obrisano", "Greska!", JOptionPane.WARNING_MESSAGE);
             Logger.getLogger(GlavniProzor.class.getName()).log(Level.SEVERE, null, ex);
+        }*/
+        /*
+        Ovo je što sledi je dopunjen kod koji proverava ispravnost unete šifre i da li ta šifra postoji u tabeli
+        Credits to Aleksej Mitić!
+         */
+        try {
+            int i, id2;
+            boolean found = false;
+            int id = Integer.parseInt(jTextField1.getText());
+            for (i = 0; i < jTable1.getRowCount(); i++) {
+                id2 = (int) jTable1.getValueAt(i, 0);
+                if (id == id2) {
+                    found = true;
+
+                    PreparedStatement ps = c.prepareStatement("DELETE FROM PROJEKAT WHERE ProjekatID = ?");
+                    ps.setInt(1, id);
+                    ps.execute();
+                    JOptionPane.showMessageDialog(this, "Uspesno obrisano", "Uspeh!", JOptionPane.INFORMATION_MESSAGE);
+
+                    File f = new File("log_" + LocalDate.now().toString() + ".txt");
+                    try {
+                        FileWriter fw = new FileWriter(f, true);
+                        fw.write(jTextField1.getText() + jTextField2.getText() + "\n");
+                        fw.close();
+
+                    } catch (IOException ex) {
+                        Logger.getLogger(GlavniProzor.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                    jTextField1.setText("");
+                    jTextField2.setText("");
+                    jTextField3.setText("");
+                    jTextField4.setText("");
+                    jCheckBox1.setSelected(false);
+                    jTextArea1.setText("");
+                    populate();
+
+                    break;
+                }
+            }
+            if (!found) {
+                JOptionPane.showMessageDialog(this, "Sifra ne postoji!", "Greska!", JOptionPane.ERROR_MESSAGE);
+                jTextField1.setText("");
+                jTextField2.setText("");
+                jTextField3.setText("");
+                jTextField4.setText("");
+                jCheckBox1.setSelected(false);
+                jTextArea1.setText("");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(GlavniProzor.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Greska prilikom Brisanja", "Greska!", JOptionPane.ERROR_MESSAGE);
+        } catch (NumberFormatException ex) {
+            Logger.getLogger(GlavniProzor.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Šifra nije ispravno napisana!", "Greska!", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
